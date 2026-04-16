@@ -1,0 +1,6 @@
+*.db
+*.log
+playwright-env/
+__pycache__/
+.vscode/
+elysium_vault/backups/
