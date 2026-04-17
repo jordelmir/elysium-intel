@@ -23,3 +23,6 @@ backups/
 .vscode/
 .idea/
 .DS_Store
+whisper.cpp/
+wchess.wasm/
+*.css
