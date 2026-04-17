@@ -1,6 +1,25 @@
-*.db
-*.log
-playwright-env/
+# Secretos y Entorno
+.env
+.env.example
+*.key
+*.pem
+
+# Python e Infraestructura
 __pycache__/
+*.py[cod]
+*$py.class
+playwright-env/
+venv/
+.env/
+
+# Datos y Bóveda
+*.db
+*.sqlite3
+elysium_vault/
+backups/
+*.log
+
+# Editores y Sistema
 .vscode/
-elysium_vault/backups/
+.idea/
+.DS_Store

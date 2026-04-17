@@ -1,9 +1,12 @@
+import os
+from dotenv import load_dotenv
+load_dotenv()
 import requests
 
 class ElysiumSentinel:
     def __init__(self, bot_token=None, chat_id=None):
-        self.token = bot_token or "TU_BOT_TOKEN_AQUI"
-        self.chat_id = chat_id or "TU_CHAT_ID_AQUI"
+        self.token = bot_token or os.getenv("TELEGRAM_BOT_TOKEN")
+        self.chat_id = chat_id or os.getenv("TELEGRAM_CHAT_ID")
 
     def send_alert(self, caso):
         msg = f"🚨 *ALERTA DE INTELIGENCIA ELYSIUM*\n\n"
