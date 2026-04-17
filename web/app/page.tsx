@@ -1,43 +1,26 @@
-"use client"
-import React, { useEffect, useState } from "react"
-import { Shield, Activity, Database, Globe, ExternalLink } from "lucide-react"
+import React from "react"
+import { Shield, Database, Activity } from "lucide-react"
+import fs from "fs"
+import path from "path"
 
-const API_BASE = "http://150.136.42.125/api"
+async function getData() {
+  // En Vercel, lee el archivo JSON directamente (generado en tu último scan)
+  const vaultPath = path.join(process.cwd(), "../elysium_vault/latest.json")
+  if (fs.existsSync(vaultPath)) {
+    return JSON.parse(fs.readFileSync(vaultPath, "utf-8"))
+  }
+  return { casos: [], analisis: { total_unicos: 0 } }
+}
 
-export default function Home() {
-  const [stats, setStats] = useState({ total_cases: 0, total_entities: 0 })
-  const [latest, setLatest] = useState([])
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const sRes = await fetch(API_BASE + "/stats")
-        const lRes = await fetch(API_BASE + "/latest")
-        setStats(await sRes.json())
-        setLatest(await lRes.json())
-      } catch (e) {
-        console.error("Error core", e)
-      }
-    }
-    fetchData()
-  }, [])
-
+export default async function Home() {
+  const data = await getData()
   return (
-    <main style={{ fontFamily: "monospace", padding: "40px", maxWidth: "1200px", margin: "0 auto", background: "#030508", color: "#c8d8e8", minHeight: "100vh" }}>
-      <header style={{ borderBottom: "2px solid #ff4444", paddingBottom: "20px", marginBottom: "40px" }}>
-        <h1 style={{ fontSize: "2rem", fontWeight: "bold", color: "#fff", display: "flex", alignItems: "center", gap: "15px" }}>
-          <Shield size={40} color="#ff4444" /> ELYSIUM INTEL | Command Center
-        </h1>
-      </header>
-
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
-        <div style={{ background: "#040c14", border: "1px solid #0a3050", padding: "30px" }}>
-          <p style={{ color: "#0a5080" }}>VAULT CAPACITY</p>
-          <h2 style={{ fontSize: "3rem", margin: 0 }}>{stats.total_cases}</h2>
-        </div>
-        <div style={{ background: "#040c14", border: "1px solid #0a3050", padding: "30px" }}>
-          <p style={{ color: "#0a5080" }}>NEURAL ENTITIES</p>
-          <h2 style={{ fontSize: "3rem", margin: 0 }}>{stats.total_entities}</h2>
+    <main style={{ fontFamily: "monospace", padding: "40px", background: "#030508", color: "#c8d8e8", minHeight: "100vh" }}>
+      <h1 style={{ color: "#fff", borderBottom: "2px solid #ff4444" }}>🏛️ ELYSIUM INTEL | PUBLIC PORTAL</h1>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginTop: "40px" }}>
+        <div style={{ border: "1px solid #333", padding: "20px" }}>
+          <p>CASOS TOTALES (SSG)</p>
+          <h2>{data.casos ? data.casos.length : 0}</h2>
         </div>
       </div>
     </main>
