@@ -7,7 +7,7 @@ app = FastAPI(title="ELYSIUM INTEL API v1.1")
 # Configuración de Seguridad CORS para Vercel/Producción
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # En producción real, pondríamos la URL de tu Vercel
+    allow_origins=["https://elysium-intel.vercel.app"], # En producción real, pondríamos la URL de tu Vercel
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

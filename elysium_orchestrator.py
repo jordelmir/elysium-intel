@@ -41,4 +41,5 @@ async def execute_omni_cycle():
     print(f"✅ CICLO OMNI COMPLETADO: {time.time() - start_ts:.2f}s. Intelligence Vault Actualizado.")
 
 if __name__ == "__main__":
+    os.system("bash ~/elysium_homicidio/sync_to_web.sh")
     asyncio.run(execute_omni_cycle())
