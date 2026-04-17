@@ -1,37 +1,41 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-import sqlite3, json
+import hmac, hashlib, time, base64, asyncpg
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 
-app = FastAPI(title="ELYSIUM INTEL API v1.1")
+app = FastAPI()
+DB_CONFIG = "postgresql://elysium_api@localhost/elysium_intel"
+SECRET = b"ELYSIUM_HARDWARE_KEY_2026"
 
-# Configuración de Seguridad CORS para Vercel/Producción
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["https://elysium-intel.vercel.app"], # En producción real, pondríamos la URL de tu Vercel
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+class DumpRequest(BaseModel):
+    device_id: str
+    timestamp: int
+    nonce: str
+    payload: str
+    hmac: str
 
-DB_PATH = "/home/ubuntu/elysium_intel_v2.db"
+@app.post("/api/ingest/dump")
+async def ingest_dump(data: DumpRequest):
+    # 1. Anti-Replay
+    if abs(time.time() - data.timestamp) > 30:
+        raise HTTPException(403, "expired")
+        
+    # 2. HMAC Validation
+    msg = f"{data.device_id}{data.timestamp}{data.nonce}{data.payload}".encode()
+    expected = hmac.new(SECRET, msg, hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(data.hmac, expected):
+        raise HTTPException(403, "auth_fail")
 
-@app.get("/")
-def health():
-    return {"status": "operational", "engine": "Omni-Brain v7.0"}
-
-@app.get("/stats")
-def get_stats():
-    with sqlite3.connect(DB_PATH) as conn:
-        total = conn.execute("SELECT count(*) FROM cases").fetchone()[0]
-        entities = conn.execute("SELECT count(*) FROM entities").fetchone()[0]
-        return {"total_cases": total, "total_entities": entities}
-
-@app.get("/latest")
-def get_latest():
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.row_factory = sqlite3.Row
-        res = conn.execute("SELECT id_caso, titular, fuente, url FROM cases ORDER BY id_caso DESC LIMIT 20").fetchall()
-        return [dict(row) for row in res]
+    # 3. DB Persistence
+    payload_bytes = base64.b64decode(data.payload)
+    sha256 = hashlib.sha256(payload_bytes).digest()
+    
+    conn = await asyncpg.connect(DB_CONFIG)
+    await conn.execute("""
+        INSERT INTO hardware_raw (sha256, source_device, raw_dump, hmac_signature, nonce) 
+        VALUES ($1, $2, $3, decode($4, 'hex'), decode($5, 'hex'))
+    """, sha256, data.device_id, payload_bytes, data.hmac, data.nonce)
+    await conn.close()
+    return {"status": "ok"}
 
 if __name__ == "__main__":
     import uvicorn

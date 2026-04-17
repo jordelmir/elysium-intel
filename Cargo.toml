@@ -1,0 +1,62 @@
+[package]
+name = "elysium-forensic"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0"
+byteorder = "1.5"
+proptest = "1.5"
+EOF
+
+cat << \"EOF\" > ~/elysium_homicidio/src/engine.rs
+pub struct FeatureVector {
+    pub length: usize,
+    pub entropy: f64,
+}
+
+pub struct Detection {
+    pub layout: Option<String>,
+    pub confidence: f64,
+}
+
+pub fn compute_shannon_entropy(data: &[u8]) -> f64 {
+    let mut counts = [0u32; 256];
+    for &b in data { counts[b as usize] += 1; }
+    let len = data.len() as f64;
+    counts.iter().filter(|&&c| c > 0).map(|&c| {
+        let p = c as f64 / len;
+        -p * p.log2()
+    }).sum()
+}
+
+pub fn detect_layout(data: &[u8]) -> Detection {
+    if data.len() < 32 { return Detection { layout: None, confidence: 0.0 }; }
+    let entropy = compute_shannon_entropy(data);
+    let mut score = 0.0;
+    
+    // Invariante: Header mágico (ej. 0xDE 0xAD 0xBE 0xEF)
+    if data.starts_with(&[0xDE, 0xAD, 0xBE, 0xEF]) { score += 0.5; }
+    if entropy > 2.0 && entropy < 7.0 { score += 0.3; }
+    
+    if score < 0.7 {
+        return Detection { layout: None, confidence: score };
+    }
+    Detection { layout: Some("IPHONE_11_V1".into()), confidence: score }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use proptest::prelude::*;
+
+    proptest! {
+        #[test]
+        fn test_no_false_positive_on_random(data: Vec<u8>) {
+            let result = detect_layout(&data);
+            assert!(result.layout.is_none() || result.confidence < 0.7);
+        }
+    }
+}
+EOF
+echo "✅ Pipeline L8 Desplegado (Esquema WORM + Motor Declarativo con Proptest)"

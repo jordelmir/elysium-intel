@@ -1,6 +1,6 @@
 import asyncio, os, time, sqlite3
 from elysium_homicidio_core import run_full_scan
-from elysium_deep_scout import infiltrate_content
+from elysium_deep_scout import infiltrate_cache
 from elysium_ai_processor import ElysiumForensicAI
 from elysium_sentinel import ElysiumSentinel
 
@@ -15,7 +15,7 @@ async def execute_omni_cycle():
 
     # 2. SCOUT: Infiltración de Contenido Profundo
     print("🕵️ FASE 2: Infiltración de Evidencias Digitales...")
-    await infiltrate_content()
+    await infiltrate_cache()
 
     # 3. NEURAL: Auditoría Forense por IA
     print("🤖 FASE 3: Auditoría Neuronal y Extracción de Entidades...")
