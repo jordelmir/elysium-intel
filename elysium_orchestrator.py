@@ -1,27 +1,44 @@
-import asyncio, os, time
+import asyncio, os, time, sqlite3
 from elysium_homicidio_core import run_full_scan
+from elysium_deep_scout import infiltrate_content
+from elysium_ai_processor import ElysiumForensicAI
 from elysium_sentinel import ElysiumSentinel
 
-async def main():
-    print("🧠 [ORQUESTADOR] Iniciando ciclo de inteligencia 24/7...")
-    start_time = time.time()
-    
-    # 1. Escaneo Triple Capa (RSS + GNews + XHR)
-    print("📡 Fase 1: Recolección Multicapa...")
-    casos = await run_full_scan()
-    
-    # 2. Análisis y Filtrado de Sentinel (Alertas Críticas)
-    print("🚨 Fase 2: Alertas Críticas Sentinel...")
+async def execute_omni_cycle():
+    print("🧠 [OMNI-BRAIN] Iniciando Ciclo de Inteligencia Total v7.0...")
+    start_ts = time.time()
     sentinel = ElysiumSentinel()
-    for caso in casos[:3]: # Alerta solo de los 3 casos más recientes detectados
-        sentinel.send_alert(caso)
-        
-    # 3. Respaldo del Vault
-    print("📦 Fase 3: Respaldo del Vault...")
+
+    # 1. SCAN: Recolección Multicapa (Presente)
+    print("📡 FASE 1: Recolección Multicapa...")
+    nuevos_casos = await run_full_scan()
+
+    # 2. SCOUT: Infiltración de Contenido Profundo
+    print("🕵️ FASE 2: Infiltración de Evidencias Digitales...")
+    await infiltrate_content()
+
+    # 3. NEURAL: Auditoría Forense por IA
+    print("🤖 FASE 3: Auditoría Neuronal y Extracción de Entidades...")
+    ai = ElysiumForensicAI()
+    ai.execute_intelligence_cycle()
+
+    # 4. PATTERN: Descubrimiento de Vínculos (Knowledge Graph)
+    print("🔗 FASE 4: Análisis de Patrones y Vínculos...")
+    with sqlite3.connect("/home/ubuntu/elysium_intel_v2.db") as conn:
+        # Detectar nombres recurrentes (Potenciales objetivos o victimarios)
+        duplicates = conn.execute("""
+            SELECT valor, count(*) as menciones 
+            FROM entities 
+            WHERE tipo="VICTIMA" 
+            GROUP BY valor HAVING menciones > 1
+        """).fetchall()
+        for d in duplicates:
+            print(f"   ⚠️ PATRÓN DETECTADO: {d[0]} mencionado en {d[1]} casos.")
+
+    # 5. BACKUP & CLEANUP
     os.system("bash ~/elysium_homicidio/elysium_backup.sh")
     
-    duration = time.time() - start_time
-    print(f"✅ Ciclo Completado con éxito en {duration:.2f}s. Sistema en Standby.")
+    print(f"✅ CICLO OMNI COMPLETADO: {time.time() - start_ts:.2f}s. Intelligence Vault Actualizado.")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(execute_omni_cycle())
